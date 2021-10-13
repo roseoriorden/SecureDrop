@@ -11,12 +11,15 @@ def users_registered():
 
 def registration_prompt():
     while True:
-        answer = input("Do you want to register a new user (y/n)? ")
-        if answer not in ('Y', 'y', 'N', 'n'):
-            print("Response must be in the form: y/n")
-            continue
-        else:
-            break
+        try:
+            answer = input("Do you want to register a new user (y/n)? ")
+            if answer not in ('Y', 'y', 'N', 'n'):
+                print("Response must be in the form: y/n")
+                continue
+            else:
+                break
+        except KeyboardInterrupt:
+            sys.exit()
     return answer.lower() == 'y'
 
 
@@ -29,8 +32,11 @@ def main():
         print("No users are registered with this client.")
 
     if registration_prompt():
-        user_info["full_name"] = input("Enter Full Name: ").strip().title()
-        user_info["email_address"] = input("Enter Email Address: ")
+        try:
+            user_info["full_name"] = input("Enter Full Name: ").strip().title()
+            user_info["email_address"] = input("Enter Email Address: ")
+        except KeyboardInterrupt:
+            sys.exit()
 
         while True:
             try:
