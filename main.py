@@ -19,7 +19,9 @@ def get_user_input():
             elif action == "list":
                 print("FOR NOW PRINTING ALL CONTACTS")
                 contacts.list();
-            elif action == "send":
+            elif sys.argv[0] == "send":
+                # begin sending packets
+                # call send func with arg 1 and 2 which are contact's email and filepath
                 print("send")
             elif action == "exit":
                 sys.exit("exit")
