@@ -22,6 +22,7 @@ def get_user_input():
             elif sys.argv[0] == "send":
                 # begin sending packets
                 # call send func with arg 1 and 2 which are contact's email and filepath
+                send_file.init(argv[1], argv[2])
                 print("send")
             elif action == "exit":
                 sys.exit("exit")

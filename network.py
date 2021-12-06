@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# BTW yes this is fully copied from network.py and has not been edited for our needs yet
-
 import sys
 import ssl
 import socket
