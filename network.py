@@ -70,6 +70,7 @@ def tcp_client(port, data):
 #          Broadcast Example          #
 #######################################
 def broadcast_listener(socket):
+    print("it was called")
     try:
         while True:
             data = socket.recvfrom(512)
@@ -91,16 +92,53 @@ def broadcast_sender(port):
     except KeyboardInterrupt:
         pass
 
+# def udp_broadcast(msg):
+#     init_ip()
+#     bcast_port = 5000
+#     broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#     s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+#     broadcast_socket.bind(('', bcast_port))
+
+#     broadcast_listener_worker = Process(target=broadcast_listener,
+#                                         name="broadcast_listener_worker",
+#                                         args=(broadcast_socket,))
+
+#     broadcast_sender_worker = Process(target=broadcast_sender,
+#                                       name="broadcast_sender_worker",
+#                                       args=(bcast_port,))
+#     procs = [
+#         broadcast_listener_worker,
+#         broadcast_sender_worker
+#     ]
+#     try:
+#         for p in procs:
+#             print("Starting: {}".format(p.name))
+#             p.start()
+#         while True:
+#             # tcp_client(tcp_port, input())
+#             broadcast_socket.sendto(msg.encode('ascii'), ('255.255.255.255', bcast_port))
+#             sleep(1)
+
+#     except KeyboardInterrupt:
+#         for p in procs:
+#             print("Terminating: {}".format(p.name))
+#             if p.is_alive():
+#                 p.terminate()
+#                 sleep(0.1)
+#             if not p.is_alive():
+#                 print(p.join())
+
 
 #######################################
 #               Driver                #
 #######################################
-def communication_manager(switch_ports=False):
+def communication_manager():
     # find own ip
     init_ip()
-    bcast_port = 1337 if switch_ports else 1338
-    tcp_listen = 9990 if switch_ports else 9995
-    tcp_port = 9995 if switch_ports else 9990
+    bcast_port = 1338
+    tcp_listen = 9995
+    tcp_port = 9990
+    # (removed switch_ports stuff)
 
     # broadcast to other users that you exist
     broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -147,10 +185,7 @@ def communication_manager(switch_ports=False):
 #######################################
 
 def main():
-    if len(sys.argv) > 1:
-        communication_manager()
-    else:
-        communication_manager(True)
+    communication_manager()
 
 
 if __name__ == "__main__":

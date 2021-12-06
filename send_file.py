@@ -24,8 +24,8 @@ def init(email, filepath):
 
     # then check that contact is online
     if contact_exists:
-        network.main()
-        network.broadcast_sender(999)
+        # network.main()
+        # network.broadcast_sender(999)
     
     # ask receiver if they would like to receive file
     # FOR NOW I left this as true
