@@ -2,6 +2,7 @@ import socket
 import time
 import threading
 import json
+from functools import lru_cache
 from base64 import b64encode, b64decode
 from Crypto.Hash import SHA256
 from contacts import decrypt_contacts
@@ -55,7 +56,8 @@ def receiver(socket):
         data, addr = socket.recvfrom(1024)
         if check_incoming_hash(data.decode()):
             # Open TCP Connection to user if they are in our contacts
-            threading.Thread(target=send_tcp, args=(init_tcp_client_socket(addr[0]),)).start() 
+            threading.Thread(target=send_tcp, args=(init_tcp_client_socket(addr[0]),)).start()
+            print("TOTAL THREADS ", threading.active_count())
             
         print("Got UDP Broadcast " + data.decode() + " from " + addr[0])
 
@@ -65,29 +67,30 @@ def serve_tcp(socket):
         threading.Thread(target=validate_payload, args=(client,addr),).start()
 
 def validate_payload(client, addr):
-    while True:
+    #while True: #Does this need to be a loop?
         payload = client.recv(1024)
         if b'securedrop' in b64decode(payload):
             decoded_hash = b64decode(payload).decode().replace('securedrop','')
             client.send(b'1') if check_incoming_hash(decoded_hash) else client.send(b'0')
-        #else:
-            #client.close()
+            #client.close() #Should we close the connection after?
 
 def send_tcp(socket):
     payload = b64encode(b'securedrop'+get_own_hash().encode())
-    while True:
-        print("Sending TCP Payload: " + payload.decode())
-        socket.sendall(payload)
-        data = socket.recv(1024)
-        print("Recieved TCP Payload: " + data.decode())
-        time.sleep(1)
-    #socket.close()
+    #while True:
+    print("Sending TCP Payload: " + payload.decode())
+    socket.sendall(payload)
+    data = socket.recv(1024)
+    print("Recieved TCP Payload: " + data.decode())
+    time.sleep(1)
+        #socket.close()
 
+@lru_cache
 def get_own_hash():
         with open('user_info.json', 'r') as f:
             user_info = json.load(f)
         return SHA256.new(user_info['email_address'].encode()).hexdigest()
 
+@lru_cache
 def check_incoming_hash(data):
     contacts = decrypt_contacts()
     
@@ -104,6 +107,8 @@ def main():
     threading.Thread(target=receiver,args=(init_client_socket(),)).start()       #UDP Listener
 
     threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),)).start() #TCP Server
+
+    print(threading.active_count())
 
 if __name__ == '__main__':
     main()
