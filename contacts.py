@@ -2,25 +2,28 @@ import json
 import sys
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
+from Crypto.Hash import SHA256
 from blake3 import blake3
 import os.path
 
 
 from input import main
 
+def decrypt_contacts():
+    try:
+        with open("user_contacts_enc.json", "rb") as f:
+            nonce, tag, ciphertext = [ f.read(x) for x in (16, 16, -1) ]
+
+        cipher = AES.new(get_derived_key(), AES.MODE_EAX, nonce)
+        data = cipher.decrypt_and_verify(ciphertext, tag)
+       
+        return json.loads(data.decode())
+
+    except FileNotFoundError:
+        sys.exit("No contacts found!")
+
 def list():
-        try:
-            with open("user_contacts_enc.json", "rb") as f:
-                nonce, tag, ciphertext = [ f.read(x) for x in (16, 16, -1) ]
-
-            cipher = AES.new(get_derived_key(), AES.MODE_EAX, nonce)
-            data = cipher.decrypt_and_verify(ciphertext, tag)
-           
-            data_object = json.loads(data.decode())
-            print(json.dumps(data_object,indent=4))
-        except FileNotFoundError:
-            sys.exit("No contacts found!")
-
+    print(json.dumps(decrypt_contacts(),indent=4))
 
 def main():
     new_contact = {}
@@ -29,6 +32,7 @@ def main():
     try:
         new_contact['full_name'] = input("Enter Full Name of contact: ").strip().title()
         new_contact['email_address'] = input("Enter Email Address of contact: ")
+        new_contact['email_hash'] = SHA256.new(new_contact['email_address'].encode()).hexdigest()
        
         try:
             with open('user_contacts.json', 'r+') as f:
