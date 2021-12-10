@@ -2,7 +2,7 @@ import sys
 import registration
 import login
 import contacts
-
+from broadcast import start_networking, print_online_contacts
 def get_user_input():
     while(action := input()):
             if action == "help":
@@ -17,8 +17,8 @@ def get_user_input():
             elif action == "add":
                 contacts.main();
             elif action == "list":
-                print("FOR NOW PRINTING ALL CONTACTS")
-                contacts.list();
+                print('Current Contacts Online:')
+                print_online_contacts()
             elif action == "send":
                 print("send")
             elif action == "exit":
@@ -32,6 +32,7 @@ def get_user_input():
 def main():
     registration.main()
     login.main()
+    start_networking()
     get_user_input()
 
 if __name__ == '__main__':
