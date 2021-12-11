@@ -56,7 +56,7 @@ def receiver(socket):
         data, addr = socket.recvfrom(1024)
         if check_incoming_hash(data.decode()):
             online_contacts[get_email_from_hash(data.decode())] = addr[0]
-            #print(online_contacts)
+            # print(online_contacts)
             # Open TCP Connection to user if they are in our contacts
             threading.Thread(target=send_tcp, args=(init_tcp_client_socket(addr[0]),)).start()
             #print("TOTAL THREADS ", threading.active_count())
@@ -129,7 +129,7 @@ def print_online_contacts():
         print('\t - ', key)
 
 def return_contacts_dict():
-  return online_contacts
+    return online_contacts
 
 def start_networking():
     global online_contacts
