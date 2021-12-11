@@ -65,12 +65,13 @@ def receive_file():
     print("Receiving file")
 
 def init_tcp_server_socket():
+    global tcp_server
     tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    tcp_server.bind(('127.0.0.1',5010)) #Bind to localhost for testing, replace with get_ip() in production
+    tcp_server.bind((broadcast.get_ip(),5010)) #Bind to localhost for testing, replace with get_ip() in production
     tcp_server.listen(5)
     print('Started TCP Server...')
-    return tcp_server
+    # return tcp_server
 
 def init_tcp_client_socket(IP):
     tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -88,7 +89,7 @@ def validate_payload(client, addr):
     #while True: #Does this need to be a loop?
         # contacts_dict = broadcast.return_contacts_dict()
         # contact_email = contacts_dict[client]
-        payload = client.recv(4091)
+        payload = client.recv(4096)
         accept = ''
         # print(b64decode(payload))
         try:

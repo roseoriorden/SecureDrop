@@ -31,7 +31,7 @@ def init_client_socket():
 def init_tcp_server_socket():
     tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    tcp_server.bind(('127.0.0.1',5000)) #Bind to localhost for testing, replace with get_ip() in production
+    tcp_server.bind((get_ip(),5000)) #Bind to localhost for testing, replace with get_ip() in production
     tcp_server.listen(5)
     #print('Started TCP Server...')
     return tcp_server

@@ -5,6 +5,7 @@ import registration
 import login
 import contacts
 from broadcast import start_networking, print_online_contacts
+import send_file
 def get_user_input():
     while(action := input()):
             if action == "help":
@@ -21,10 +22,10 @@ def get_user_input():
             elif action == "list":
                 print("FOR NOW PRINTING ALL CONTACTS")
                 contacts.list();
-            elif sys.argv[0] == "send":
+            elif action.split()[0] == "send":
                 # begin sending packets
                 # call send func with arg 1 and 2 which are contact's email and filepath
-                send_file.init(argv[1], argv[2])
+                send_file.main(action.split()[1], action.split()[2])
                 print('initiating file transfer')
             elif action == "exit":
                 sys.exit("exit")
