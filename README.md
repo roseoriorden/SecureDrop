@@ -1,4 +1,5 @@
-#Secure Drop
+Secure Drop
+
 Mustapha Ayad, Sean Cox, Rose O'Riorden, Evan Soroken
 
 The purpose of Secure Drop is to create a secure file transfer protocol between users. We used Python for this project since it offers support for cryptographic libraries such as PyCrypto. 
