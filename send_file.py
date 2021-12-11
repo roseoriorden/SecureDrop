@@ -38,7 +38,7 @@ def init(email, filepath):
     contacts_dict = broadcast.return_contacts_dict()
     if email in contacts_dict:
         contact_is_online = True
-    ip_addr = contacts_dict[email]
+        print('contact is online, searching for IP...')
     if not contact_is_online:
         print('contact is not online')
         try:
@@ -46,6 +46,7 @@ def init(email, filepath):
         except:
             print('could not exit')
     else:
+        ip_addr = contacts_dict[email]
         print('contact is online')
     print(ip_addr)
     # init_tcp_client_socket(IP)
@@ -158,7 +159,6 @@ def main(email, filepath):
     #if email == '':
         #email = "rose"
         #filepath = "rose"
-    broadcast.start_networking()
     
     threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),)).start() #TCP Server
     

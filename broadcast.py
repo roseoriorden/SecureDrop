@@ -44,45 +44,66 @@ def init_tcp_client_socket(IP):
     return tcp_client
 
 
+#############
+#    UDP broadcast
+#############
+
 def broadcaster(socket):
-    while True:
-        #print("UDP Broadcasting: " + get_own_hash())
-        socket.sendto(get_own_hash().encode(), ("", 5005))
-        time.sleep(1)
+    try:
+        while True:
+            #print("UDP Broadcasting: " + get_own_hash())
+            socket.sendto(get_own_hash().encode(), ("", 5005))
+            time.sleep(3)
+    except KeyboardInterrupt:
+        pass
 
 def receiver(socket):
     socket.bind(("", 5005))
     while True:
         data, addr = socket.recvfrom(1024)
-        if check_incoming_hash(data.decode()):
-            online_contacts[get_email_from_hash(data.decode())] = addr[0]
-            # print(online_contacts)
-            # Open TCP Connection to user if they are in our contacts
-            threading.Thread(target=send_tcp, args=(init_tcp_client_socket(addr[0]),)).start()
-            #print("TOTAL THREADS ", threading.active_count())
-            
-        #print("Got UDP Broadcast " + data.decode() + " from " + addr[0])
+        # print(data)
+        if addr[0] != '127.0.0.1':
+            if check_incoming_hash(data.decode()):
+                online_contacts[get_email_from_hash(data.decode())] = addr[0]
+                print(online_contacts)
+                # Open TCP Connection to user if they are in our contacts
+                threading.Thread(target=send_tcp, args=(init_tcp_client_socket(addr[0]),)).start()
+                #print("TOTAL THREADS ", threading.active_count())
+            print("Got UDP Broadcast " + data.decode() + " from " + addr[0])
 
-def serve_tcp(socket):
-    while True:
-        client, addr = socket.accept()
-        threading.Thread(target=validate_payload, args=(client,addr),).start()
 
 def validate_payload(client, addr):
     #while True: #Does this need to be a loop?
         payload = client.recv(1024)
-        #print("DECODED PAYLOAD: ", b64decode(payload))
+        # print("DECODED PAYLOAD: ", b64decode(payload))
         if b'securedrop' in b64decode(payload):
             decoded_hash = b64decode(payload).decode().replace('securedrop','')
             client.send(b'1') if check_incoming_hash(decoded_hash) else client.send(b'0')
             #client.close() #Should we close the connection after?
 
+##############
+#   TCP
+##############
+
+
+def serve_tcp(socket):
+    try:
+        while True:
+            client, addr = socket.accept()
+            threading.Thread(target=validate_payload, args=(client,addr),).start()
+    finally:
+        socket.close()
+
 def send_tcp(socket):
     payload = b64encode(b'securedrop'+get_own_hash().encode())
     #while True:
     #print("Sending TCP Payload: " + payload.decode())
-    socket.sendall(payload)
-    data = socket.recv(1024)
+    try:
+        socket.sendall(payload)
+        data = socket.recv(1024)
+    except KeyboardInterrupt:
+        print('tcp socket error')
+        socket.close()
     #print('TCP DATA ', data.decode())
 
     if data.decode() == '0':

@@ -20,8 +20,8 @@ def get_user_input():
             elif action == "add":
                 contacts.main();
             elif action == "list":
-                print("FOR NOW PRINTING ALL CONTACTS")
-                contacts.list();
+                print("Current contacts online:")
+                print_online_contacts()
             elif action.split()[0] == "send":
                 # begin sending packets
                 # call send func with arg 1 and 2 which are contact's email and filepath
