@@ -6,6 +6,8 @@ import json
 import sys
 from contacts import decrypt_contacts
 import threading
+from base64 import b64encode
+from base64 import b64decode
 
 def init(email, filepath):
     # first check that the contact exists
@@ -28,40 +30,22 @@ def init(email, filepath):
 
     
     # ask receiver if they would like to receive file
-    # FOR NOW I left this as true
-    accept_transfer = True
+    accept_transfer = send_request(tcp_server) 
+
     if accept_transfer:
-        send_file('127.0.0.1', 5010, filepath)
+        send_tcp(tcp_server, filepath)
         print("File sent to " + email)
     else:
         print("Recipient declined.\nExiting file transfer.")
         sys.exit()
 
 
-def send_file(dest_ip, dest_port, filepath):
-    # SEPARATOR = "<SEPARATOR>"
-    # BUFFER_SIZE = 4096 # send 4096 bytes each time step
-    # the ip address or hostname of the server, the receiver
-    # host = dest_ip
-    # the port
-    # port = dest_port
-    # the name of file we want to send, make sure it exists
-    # filename = filepath
-    # get the file size
-    # filesize = os.path.getsize(filename)
-    
-    
-    
-    
-
-
-    # FIRST ASK RECEIVER IF THEY WANT TO ACCEPT THE FILE!!!
-
 def receive_file():
     # 
     print("Receiving file")
 
 def init_tcp_server_socket():
+    global tcp_server 
     tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     tcp_server.bind(('127.0.0.1',5010)) #Bind to localhost for testing, replace with get_ip() in production
@@ -83,10 +67,13 @@ def serve_tcp(socket):
 
 def validate_payload(client, addr):
     #while True: #Does this need to be a loop?
+        contact = broadcast.return_contacts_dict[addr]
         payload = client.recv(1024)
-        if b'securedrop' in b64decode(payload):
-            decoded_hash = b64decode(payload).decode().replace('securedrop','')
-            client.send(b'1') if check_incoming_hash(decoded_hash) else client.send(b'0')
+        accept = ''
+        if b'requestsd' == b64decode(payload):
+            if accept != 'y' or accept != 'n' or accept != 'Y' or accept != 'N':
+                accept = input('Incoming file from ' + contact + ', would you like to accept? (y/n): ')
+                client.send(b'1') if accept else client.send(b'0')
             #client.close() #Should we close the connection after?
 
 def send_tcp(socket, filepath):
@@ -98,17 +85,34 @@ def send_tcp(socket, filepath):
                 unit="B", unit_scale=True, unit_divisor=1024)
     with open(filepath, 'rb') as f:
         data = f.read()
-    socket.send_all(data)
+    socket.sendall(data)
     progress.update(len(bytes_read))
     socket.shutdown(socket.SHUT_WR)
     print("transfer complete")
     # data = socket.recv(1024)
     # print("Recieved TCP Payload: " + data.decode())
 
-def main():
+def send_request(socket):
+    payload = b64encode(b'requestsd')
+    #while True:
+    #print("Sending TCP Payload: " + payload.decode())
+    socket.sendall(payload)
+    data = socket.recv(1024)
+    #print('TCP DATA ', data.decode())
+
+    if data.decode() == '1':
+        return True
+    else:
+        return False
+        #socket.close()
+
+def main(email, filepath):
     threading.Thread(target=serve_tcp, args=(init_tcp_server_socket()
-                        ,filepath)).start() #TCP Server
-    init("emma", "main.py")
+                        ,)).start() #TCP Server
+    if email == '':
+        email = "emma"
+        filepath = "emma"
+    init(email, filepath)
 
 if __name__ == "__main__":
-    main()
+    main("emma", "main.py")
