@@ -9,11 +9,13 @@ from base64 import b64encode
 from base64 import b64decode
 import broadcast
 import time
+import ssl
 
 def init(email, filepath):
     # first check that the contact exists
     contact_exists = False
     contact_is_online = False
+    accept_transfer = False
     contacts = decrypt_contacts()
     for contact in contacts:
         if contact["email_address"] == email:
@@ -47,9 +49,9 @@ def init(email, filepath):
     else:
         ip_addr = contacts_dict[email]
         print('contact is online')
-    print(ip_addr)
+        print(ip_addr)
+        accept_transfer = send_request(init_tcp_client_socket(ip_addr))
     # init_tcp_client_socket(IP)
-    accept_transfer = send_request(init_tcp_client_socket(ip_addr))
     # ask receiver if they would like to receive file
 
     if accept_transfer:
@@ -75,7 +77,14 @@ def init_tcp_server_socket():
 def init_tcp_client_socket(IP):
     tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    tcp_client.connect((IP, 5010))
+    
+    # TLS
+    cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    cntx.load_verify_locations('selfsigned.crt')
+    cntx = load_cert_chain('selfsigned.crt')
+    s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='test.server')
+    print('Secure TCP client initialized')
+    s_tcp_client.connect((IP, 5010))
     print('Started TCP Client...')
     return tcp_client
 
@@ -107,7 +116,8 @@ def validate_payload(client, addr):
         # except:
         #     data = payload
         #     data.append(recvall(client))
-        client.close() #Should we close the connection after?
+        finally:
+            client.close() #Should we close the connection after?
 
 
 def recvall(sock):
@@ -162,4 +172,4 @@ def main(email, filepath):
     init(email, filepath)
 
 if __name__ == "__main__":
-    main('evan1', 'longtest')
+    main('student', 'longtest')
