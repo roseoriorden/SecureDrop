@@ -6,6 +6,9 @@ import login
 import contacts
 from broadcast import start_networking, print_online_contacts
 import send_file
+import os
+import certificate_authority
+
 def get_user_input():
     while(action := input()):
             if action == "help":
@@ -38,6 +41,8 @@ def get_user_input():
 def main():
     registration.main()
     login.main()
+    if not os.path.exists('selfsigned.crt')
+        certificate_authority.cert_gen()
     start_networking()
     get_user_input()
 
