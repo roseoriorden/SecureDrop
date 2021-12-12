@@ -1,5 +1,4 @@
 import socket
-import tqdm # progress bars (not needed but fun)
 import os
 from os import path
 import json
@@ -126,12 +125,10 @@ def send_tcp(socket, filepath):
     #while True:
     # print("Sending TCP Payload: " + payload.decode())
     filesize = os.path.getsize(filepath)
-    # progress = tqdm.tqdm(range(filesize), f"Sending {filepath}", 
     #             unit="B", unit_scale=True, unit_divisor=1024)
     with open(filepath, 'rb') as f:
         data = f.read()
     socket.sendall(data)
-    # progress.update(len(bytes_read))
     # socket.shutdown(socket.SHUT_WR)
     socket.close()
     print("transfer complete")
