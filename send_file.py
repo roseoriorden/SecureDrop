@@ -92,8 +92,8 @@ def init_tcp_client_socket(IP):
     
     # TLS
     cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    cntx.load_verify_locations('selfsigned.crt')
-    cntx = load_cert_chain('selfsigned.crt')
+    cntx.load_verify_locations('cert.pem')
+    cntx = load_cert_chain('cert.pem')
     s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='test.server')
     print('Secure TCP client initialized')
     
