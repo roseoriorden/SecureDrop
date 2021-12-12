@@ -91,9 +91,10 @@ def init_tcp_client_socket(IP):
     tcp_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
     # TLS
+    os.environ['REQUESTS_CA_BUNDLE'] = '$(pwd)/cert.pem'
     cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     cntx.load_verify_locations('cert.pem')
-    cntx.load_cert_chain('cert.pem')
+    cntx.load_cert_chain('cert.pem', 'private.key')
     s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='test.server')
     print('Secure TCP client initialized')
     
