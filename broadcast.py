@@ -6,6 +6,7 @@ from functools import lru_cache
 from base64 import b64encode, b64decode
 from Crypto.Hash import SHA256
 from contacts import decrypt_contacts
+from send_file import init_file_tcp_server
 
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -90,7 +91,7 @@ def serve_tcp(socket):
     try:
         while True:
             client, addr = socket.accept()
-            threading.Thread(target=validate_payload, args=(client,addr),).start()
+            threading.Thread(target=validate_payload, args=(client,addr),daemon=True).start()
     finally:
         socket.close()
 
@@ -161,6 +162,7 @@ def start_networking():
 
     threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),),daemon=True).start() #TCP Server
 
+    init_file_tcp_server()
 
 if __name__ == '__main__':
     start_networking()

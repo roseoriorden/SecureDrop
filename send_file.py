@@ -66,13 +66,12 @@ def receive_file():
     print("Receiving file")
 
 def init_tcp_server_socket():
-    global tcp_server
     tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     tcp_server.bind((broadcast.get_ip(),5010)) #Bind to localhost for testing, replace with get_ip() in production
     tcp_server.listen(5)
-    print('Started TCP Server...')
-    # return tcp_server
+    print('Started TCP Server on ', broadcast.get_ip())
+    return tcp_server
 
 def init_tcp_client_socket(IP):
     tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -155,14 +154,15 @@ def send_request(socket):
         return False
         #socket.close()
 
+def init_file_tcp_server():
+    threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),),daemon=True).start() #TCP Server
+
 def main(email, filepath):
     #if email == '':
         #email = "rose"
         #filepath = "rose"
     
-    threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),),daemon=True).start() #TCP Server
-    
     init(email, filepath)
 
 if __name__ == "__main__":
-    main('rose', 'longtest')
+    main('evan1', 'longtest')
