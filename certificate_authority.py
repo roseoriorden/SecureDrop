@@ -1,13 +1,13 @@
 from OpenSSL import crypto, SSL
 
 def cert_gen(
-    emailAddress="emailAddress",
-    commonName="commonName",
-    countryName="NT",
-    localityName="localityName",
-    stateOrProvinceName="stateOrProvinceName",
-    organizationName="organizationName",
-    organizationUnitName="organizationUnitName",
+    emailAddress="email@gmail.com",
+    commonName="securedrop",
+    countryName="US",
+    localityName="NE",
+    stateOrProvinceName="MA",
+    organizationName="UML",
+    organizationUnitName="comp2300",
     serialNumber=0,
     validityStartInSeconds=0,
     validityEndInSeconds=10*365*24*60*60,
