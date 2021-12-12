@@ -41,7 +41,7 @@ def get_user_input():
 def main():
     registration.main()
     login.main()
-    if not os.path.exists('selfsigned.crt')
+    if not os.path.exists('selfsigned.crt'):
         certificate_authority.cert_gen()
     start_networking()
     get_user_input()
