@@ -10,6 +10,7 @@ from base64 import b64decode
 import broadcast
 import time
 import ssl
+import certificate_authority
 
 def init(email, filepath):
     # first check that the contact exists
@@ -61,7 +62,6 @@ def init(email, filepath):
         print("Recipient declined.\nExiting file transfer.")
         sys.exit()
 
-
 def receive_file():
     # 
     print("Receiving file")
@@ -69,10 +69,22 @@ def receive_file():
 def init_tcp_server_socket():
     tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    tcp_server.bind((broadcast.get_ip(),5010)) #Bind to localhost for testing, replace with get_ip() in production
-    tcp_server.listen(5)
+    
+    # TLS
+    cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    # try:
+    #cntx.load_cert_chain('./selfsigned.cert', './private.key')
+    cntx.load_cert_chain('cert.pem', 'private.key')
+    #except:
+        #print('no cert/key files found')
+        #tcp_server.close()
+        #sys.exit()
+    s_tcp_server = cntx.wrap_socket(tcp_server, server_side=True)
+
+    s_tcp_server.bind((broadcast.get_ip(),5010)) #Bind to localhost for testing, replace with get_ip() in production
+    s_tcp_server.listen(5)
     print('Started TCP Server on ', broadcast.get_ip())
-    return tcp_server
+    return s_tcp_server
 
 def init_tcp_client_socket(IP):
     tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -84,6 +96,7 @@ def init_tcp_client_socket(IP):
     cntx = load_cert_chain('selfsigned.crt')
     s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='test.server')
     print('Secure TCP client initialized')
+    
     s_tcp_client.connect((IP, 5010))
     print('Started TCP Client...')
     return tcp_client

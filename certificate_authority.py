@@ -12,7 +12,7 @@ def cert_gen(
     validityStartInSeconds=0,
     validityEndInSeconds=10*365*24*60*60,
     KEY_FILE = "private.key",
-    CERT_FILE="selfsigned.crt"):
+    CERT_FILE="cert.pem"):
     #can look at generated file using openssl:
     #openssl x509 -inform pem -in selfsigned.crt -noout -text
     # create a key pair

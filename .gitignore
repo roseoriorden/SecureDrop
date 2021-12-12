@@ -1,3 +1,4 @@
 *.json
 __pychache__
-*.crt
+*.pem
+*.key

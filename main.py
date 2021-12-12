@@ -39,10 +39,10 @@ def get_user_input():
 
     
 def main():
+    if not os.path.exists('cert.pem') or not os.path.exists('private.key'):
+        certificate_authority.cert_gen()
     registration.main()
     login.main()
-    if not os.path.exists('selfsigned.crt'):
-        certificate_authority.cert_gen()
     start_networking()
     get_user_input()
 
