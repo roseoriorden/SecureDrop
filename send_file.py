@@ -84,7 +84,7 @@ def init_tcp_client_socket(IP):
 def serve_tcp(socket):
     while True:
         client, addr = socket.accept()
-        threading.Thread(target=validate_payload, args=(client,addr),).start()
+        threading.Thread(target=validate_payload, args=(client,addr),daemon=True).start()
 
 def validate_payload(client, addr):
     #while True: #Does this need to be a loop?
@@ -160,7 +160,7 @@ def main(email, filepath):
         #email = "rose"
         #filepath = "rose"
     
-    threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),)).start() #TCP Server
+    threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),),daemon=True).start() #TCP Server
     
     init(email, filepath)
 
