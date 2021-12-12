@@ -75,7 +75,7 @@ def init_tcp_server_socket():
     cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     # try:
     #cntx.load_cert_chain('./selfsigned.cert', './private.key')
-    cntx.load_cert_chain('cert.pem', 'cert.pem')
+    cntx.load_cert_chain('cert.pem', 'private.key')
     #except:
         #print('no cert/key files found')
         #tcp_server.close()
@@ -96,13 +96,14 @@ def init_tcp_client_socket(IP):
     
     cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     cntx.load_verify_locations('cert.pem')
-    cntx.load_cert_chain('cert.pem')
-    s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='test.server')
+    cntx.load_cert_chain('cert.pem', 'private.key')
+    s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='securedrop')
     print('Secure TCP client initialized')
     
     s_tcp_client.connect((IP, 5010))
     print('Started TCP Client...')
-    return tcp_client
+    return s_tcp_client
+
 
 def serve_tcp(socket):
     while True:
@@ -113,18 +114,22 @@ def validate_payload(client, addr):
     #while True: #Does this need to be a loop?
         # contacts_dict = broadcast.return_contacts_dict()
         # contact_email = contacts_dict[client]
-        payload = client.recv(4096)
+        payload = client.recv(1024)
         accept = ''
+        print(payload)
         # print(b64decode(payload))
-        try:
-            if b'requestsd' in b64decode(payload):
-                decoded_hash = b64decode(payload).decode().replace('requestsd','')
-                while (accept != 'y' and accept != 'n' and accept != 'Y' and accept != 'N'):
-                    accept = input('Incoming file from ' + broadcast.get_email_from_hash(decoded_hash)
-                            + ', would you like to accept? (y/n): ')
-                    if accept == 'y' or accept == 'Y':
-                        client.send(b'1') if accept else client.send(b'0')
-        except:
+        if not len(payload) % 4:
+            try:
+                if b'requestsd' in b64decode(payload):
+                    decoded_hash = b64decode(payload).decode().replace('requestsd','')
+                    while (accept != 'y' and accept != 'n' and accept != 'Y' and accept != 'N'):
+                        accept = input('Incoming file from ' + broadcast.get_email_from_hash(decoded_hash)
+                                + ', would you like to accept? (y/n): ')
+                        if accept == 'y' or accept == 'Y':
+                            client.send(b'1') if accept else client.send(b'0')
+            except:
+                pass
+        else:
             data = payload.decode()
             data += recvall(client).decode()
             with open('output', 'w') as outfile:
@@ -132,8 +137,7 @@ def validate_payload(client, addr):
         # except:
         #     data = payload
         #     data.append(recvall(client))
-        finally:
-            client.close() #Should we close the connection after?
+            # client.close() #Should we close the connection after?
 
 
 def recvall(sock):
@@ -156,6 +160,7 @@ def send_tcp(socket, filepath):
         data = f.read()
     socket.sendall(data)
     # socket.shutdown(socket.SHUT_WR)
+    time.sleep(2)
     socket.close()
     print("transfer complete")
     # data = socket.recv(1024)
@@ -167,15 +172,20 @@ def send_request(socket):
     payload = b64encode(b'requestsd'+broadcast.get_own_hash().encode())
     #while True:
     #print("Sending TCP Payload: " + payload.decode())
-    socket.sendall(payload)
-    data = socket.recv(1024)
+    try:
+        socket.sendall(payload)
+        data = socket.recv(1024)
+    except:
+        print('socket is no longer open')
+        sys.exit(1)
     #print('TCP DATA ', data.decode())
 
     if data.decode() == '1':
         return True
     else:
         return False
-        #socket.close()
+    # finally:
+        # socket.close()
 
 def init_file_tcp_server():
     threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),),daemon=True).start() #TCP Server
