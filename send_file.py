@@ -11,6 +11,7 @@ import broadcast
 import time
 import ssl
 import certificate_authority
+import requests
 
 def init(email, filepath):
     # first check that the contact exists
@@ -74,7 +75,7 @@ def init_tcp_server_socket():
     cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     # try:
     #cntx.load_cert_chain('./selfsigned.cert', './private.key')
-    cntx.load_cert_chain('cert.pem', 'private.key')
+    cntx.load_cert_chain('cert.pem', 'cert.pem')
     #except:
         #print('no cert/key files found')
         #tcp_server.close()
@@ -91,10 +92,11 @@ def init_tcp_client_socket(IP):
     tcp_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
     # TLS
-    os.environ['REQUESTS_CA_BUNDLE'] = '$(pwd)/cert.pem'
+    # os.environ['REQUESTS_CA_BUNDLE'] = '$(pwd)/cert.pem'
+    
     cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     cntx.load_verify_locations('cert.pem')
-    cntx.load_cert_chain('cert.pem', 'private.key')
+    cntx.load_cert_chain('cert.pem')
     s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='test.server')
     print('Secure TCP client initialized')
     
