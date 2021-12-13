@@ -4,10 +4,8 @@ import getpass
 import sys
 from password import *
 
-
 def users_registered():
     return os.path.exists("user_info.json")
-
 
 def registration_prompt():
     while True:
@@ -21,7 +19,6 @@ def registration_prompt():
         except KeyboardInterrupt:
             sys.exit()
     return answer.lower() == 'y'
-
 
 def main():
     user_info = {}
@@ -60,7 +57,6 @@ def main():
             print("User Registered.\n")
         except Exception:
             sys.exit("Unable to write to file 'user_info.json'")
-
 
 if __name__ == '__main__':
     main()

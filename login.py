@@ -5,7 +5,6 @@ from base64 import b64encode
 from Crypto.Hash import SHA256
 from Crypto.Protocol.KDF import bcrypt_check
 
-
 def main():
 
     with open('user_info.json', 'r') as f:
@@ -32,7 +31,6 @@ def main():
                 continue
         except KeyboardInterrupt:
             sys.exit()
-
 
 if __name__ == '__main__':
     main()
