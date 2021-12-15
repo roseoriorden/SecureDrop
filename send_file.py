@@ -5,14 +5,11 @@ import sys
 import threading
 import broadcast
 import time
-<<<<<<< HEAD
 import ssl
 import certificate_authority
 import requests
-=======
 from contacts import decrypt_contacts
 from base64 import b64encode, b64decode
->>>>>>> master
 
 def init(email, filepath):
     # first check that the contact exists
@@ -50,15 +47,7 @@ def init(email, filepath):
             print('Could not exit')
     else:
         ip_addr = contacts_dict[email]
-<<<<<<< HEAD
-        print('contact is online')
-        print(ip_addr)
         accept_transfer = send_request(init_tcp_client_socket(ip_addr))
-    # init_tcp_client_socket(IP)
-=======
-        print('Contact is online')
-    accept_transfer = send_request(init_tcp_client_socket(ip_addr))
->>>>>>> master
     # ask receiver if they would like to receive file
 
     if accept_transfer:
@@ -68,7 +57,6 @@ def init(email, filepath):
         print("Recipient declined.\nExiting file transfer.")
         sys.exit()
 
-<<<<<<< HEAD
 def receive_file():
     # 
     print("Receiving file")
@@ -78,7 +66,8 @@ def init_tcp_server_socket():
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
     # TLS
-    cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    # cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    cntx = ssl._create_unverified_context()
     # try:
     #cntx.load_cert_chain('./selfsigned.cert', './private.key')
     cntx.load_cert_chain('cert.pem', 'private.key')
@@ -100,7 +89,8 @@ def init_tcp_client_socket(IP):
     # TLS
     # os.environ['REQUESTS_CA_BUNDLE'] = '$(pwd)/cert.pem'
     
-    cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    # cntx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    cntx = ssl._create_unverified_context()
     cntx.load_verify_locations('cert.pem')
     cntx.load_cert_chain('cert.pem', 'private.key')
     s_tcp_client = cntx.wrap_socket(tcp_client, server_hostname='securedrop')
@@ -124,19 +114,6 @@ def validate_payload(client, addr):
         accept = ''
         print(payload)
         # print(b64decode(payload))
-        if not len(payload) % 4:
-            try:
-                if b'requestsd' in b64decode(payload):
-                    decoded_hash = b64decode(payload).decode().replace('requestsd','')
-                    while (accept != 'y' and accept != 'n' and accept != 'Y' and accept != 'N'):
-                        accept = input('Incoming file from ' + broadcast.get_email_from_hash(decoded_hash)
-                                + ', would you like to accept? (y/n): ')
-                        if accept == 'y' or accept == 'Y':
-                            client.send(b'1') if accept else client.send(b'0')
-            except:
-                pass
-        else:
-=======
         payload = client.recv(4096)
         accept = ''
         try:
@@ -148,20 +125,11 @@ def validate_payload(client, addr):
                     if accept == 'y' or accept == 'Y':
                         client.send(b'1') if accept else client.send(b'0')
         except:
->>>>>>> master
             data = payload.decode()
             data += recvall(client).decode()
             with open('output', 'w') as outfile:
                 outfile.write(data)
-<<<<<<< HEAD
-        # except:
-        #     data = payload
-        #     data.append(recvall(client))
-            # client.close() #Should we close the connection after?
-
-=======
         client.close()
->>>>>>> master
 
 def recvall(sock):
     BUFF_SIZE = 4096
@@ -178,40 +146,26 @@ def send_tcp(socket, filepath):
     with open(filepath, 'rb') as f:
         data = f.read()
     socket.sendall(data)
-<<<<<<< HEAD
     # socket.shutdown(socket.SHUT_WR)
     time.sleep(2)
-=======
->>>>>>> master
     socket.close()
     print("Transfer complete")
 
 def send_request(socket):
     payload = b64encode(b'requestsd'+broadcast.get_own_hash().encode())
-<<<<<<< HEAD
     #while True:
     #print("Sending TCP Payload: " + payload.decode())
     try:
         socket.sendall(payload)
         data = socket.recv(1024)
     except:
-        print('socket is no longer open')
         sys.exit(1)
     #print('TCP DATA ', data.decode())
-=======
-    socket.sendall(payload)
-    data = socket.recv(1024)
->>>>>>> master
 
     if data.decode() == '1':
         return True
     else:
         return False
-<<<<<<< HEAD
-    # finally:
-        # socket.close()
-=======
->>>>>>> master
 
 def init_file_tcp_server():
     threading.Thread(target=serve_tcp, args=(init_tcp_server_socket(),),daemon=True).start() #TCP Server
@@ -220,8 +174,4 @@ def main(email, filepath):
     init(email, filepath)
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     main('student', 'longtest')
-=======
-    main('evan1', 'longtest') #debug
->>>>>>> master
