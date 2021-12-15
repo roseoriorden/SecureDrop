@@ -31,7 +31,27 @@ def decrypt_contacts():
             [ f.write(x) for x in (cipher.nonce, tag, ciphertext) ]
 
         print('Contact Added.')
-        
+
+        decrypt_contacts()
+
+    except RecursionError:
+        sys.exit('Fatal error accessing user_contacts.json')
+
+def decrypt_and_update(contacts):
+    with open('user_contacts.json', 'w') as f:
+        json.dump(contacts, f, indent=4)
+
+    with open('user_contacts.json', 'rb') as f:
+        plaintext = f.read()
+
+    cipher = AES.new(get_derived_key(), AES.MODE_EAX)
+    ciphertext, tag = cipher.encrypt_and_digest(plaintext)
+
+    with open("user_contacts.json", "wb") as f:
+        [ f.write(x) for x in (cipher.nonce, tag, ciphertext) ]
+
+    list()
+
 def list():
     print(json.dumps(decrypt_contacts(),indent=4))
 
@@ -48,18 +68,17 @@ def main():
         new_contact['email_hash'] = SHA256.new(new_contact['email_address'].encode()).hexdigest()
        
         contacts = decrypt_contacts()
+        print('type of contacts: ', type(contacts))
 
         for contact in contacts:
             if contact['email_address'] == new_contact['email_address']:
                 contact.update(new_contact)
-                f.seek(0)
-                json.dump(contacts, f, indent=4)
+                decrypt_and_update(contacts)
                 break
 
         else:
             contacts.append(new_contact)
-            f.seek(0)
-            json.dump(contacts, f, indent=4)
+            decrypt_and_update(contacts)
 
         print("Contact Added.")
 
