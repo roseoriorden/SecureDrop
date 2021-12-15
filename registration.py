@@ -4,10 +4,8 @@ import getpass
 import sys
 from password import *
 
-
 def users_registered():
     return os.path.exists("user_info.json")
-
 
 def registration_prompt():
     while True:
@@ -22,14 +20,14 @@ def registration_prompt():
             sys.exit()
     return answer.lower() == 'y'
 
-
 def main():
     user_info = {}
 
-    if not(users_registered()):
+    if not users_registered():
         print("No users are registered with this client.")
+        if not registration_prompt():
+            sys.exit('Did not want to register')
 
-    if not users_registered() and registration_prompt():
         try:
             user_info["full_name"] = input("Enter Full Name: ").strip().title()
             user_info["email_address"] = input("Enter Email Address: ")
@@ -60,7 +58,6 @@ def main():
             print("User Registered.\n")
         except Exception:
             sys.exit("Unable to write to file 'user_info.json'")
-
 
 if __name__ == '__main__':
     main()

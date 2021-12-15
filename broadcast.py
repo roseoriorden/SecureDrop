@@ -19,14 +19,12 @@ def init_broadcast_socket():
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    #print('Started UDP Broadcast...')
     return server
 
 def init_client_socket():
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
     client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    #print('Started UDP Client...')
     return client
 
 def init_tcp_server_socket():
@@ -34,14 +32,12 @@ def init_tcp_server_socket():
     tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     tcp_server.bind((get_ip(),5000)) #Bind to localhost for testing, replace with get_ip() in production
     tcp_server.listen(5)
-    #print('Started TCP Server on ', get_ip(), '...')
     return tcp_server
 
 def init_tcp_client_socket(IP):
     tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcp_client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     tcp_client.connect((IP, 5000))
-    #print('Started TCP Client...')
     return tcp_client
 
 
@@ -52,7 +48,6 @@ def init_tcp_client_socket(IP):
 def broadcaster(socket):
     try:
         while True:
-            #print("UDP Broadcasting: " + get_own_hash())
             socket.sendto(get_own_hash().encode(), ("255.255.255.255", 5005))
             time.sleep(3)
     except KeyboardInterrupt:
@@ -62,25 +57,17 @@ def receiver(socket):
     socket.bind(("255.255.255.255", 5005))
     while True:
         data, addr = socket.recvfrom(1024)
-        #print(data)
         if addr[0] != get_ip():
             if check_incoming_hash(data.decode()):
                 online_contacts[get_email_from_hash(data.decode())] = addr[0]
-                #print(online_contacts)
                 # Open TCP Connection to user if they are in our contacts
                 threading.Thread(target=send_tcp, args=(init_tcp_client_socket(addr[0]),),daemon=True).start()
-                #print("TOTAL THREADS ", threading.active_count())
-            #print("Got UDP Broadcast " + data.decode() + " from " + addr[0])
-
 
 def validate_payload(client, addr):
-    #while True: #Does this need to be a loop?
         payload = client.recv(1024)
-        # print("DECODED PAYLOAD: ", b64decode(payload))
         if b'securedrop' in b64decode(payload):
             decoded_hash = b64decode(payload).decode().replace('securedrop','')
             client.send(b'1') if check_incoming_hash(decoded_hash) else client.send(b'0')
-            #client.close() #Should we close the connection after?
 
 ##############
 #   TCP
@@ -97,21 +84,17 @@ def serve_tcp(socket):
 
 def send_tcp(socket):
     payload = b64encode(b'securedrop'+get_own_hash().encode())
-    #while True:
-    #print("Sending TCP Payload: " + payload.decode())
     try:
         socket.sendall(payload)
         data = socket.recv(1024)
     except KeyboardInterrupt:
         print('tcp socket error')
         socket.close()
-    #print('TCP DATA ', data.decode())
 
     if data.decode() == '0':
         update_online_contacts(socket.getpeername()[0])
         
     time.sleep(1)
-        #socket.close()
 
 @lru_cache
 def get_own_hash():
@@ -128,7 +111,6 @@ def check_incoming_hash(data):
         if contact['email_hash'] == data:
             return True
     return False
-            #print("Your contact " + contact['full_name'] + " is online!")
 
 @lru_cache
 def update_online_contacts(ip):
@@ -166,5 +148,3 @@ def start_networking():
 
 if __name__ == '__main__':
     start_networking()
-
-
