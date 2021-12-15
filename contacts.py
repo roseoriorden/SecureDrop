@@ -13,7 +13,6 @@ def decrypt_contacts():
 
         cipher = AES.new(get_derived_key(), AES.MODE_EAX, nonce)
         data = cipher.decrypt_and_verify(ciphertext, tag)
-       
         return json.loads(data.decode())
 
     except FileNotFoundError:
@@ -32,10 +31,14 @@ def decrypt_contacts():
 
         print('Contact Added.')
 
-        decrypt_contacts()
+        with open("user_contacts.json", "rb") as f:
+            nonce, tag, ciphertext = [ f.read(x) for x in (16, 16, -1) ]
 
-    except RecursionError:
-        sys.exit('Fatal error accessing user_contacts.json')
+        cipher = AES.new(get_derived_key(), AES.MODE_EAX, nonce)
+        data = cipher.decrypt_and_verify(ciphertext, tag)
+        print('in try of decrypt') 
+        return json.loads(data.decode())
+
 
 def decrypt_and_update(contacts):
     with open('user_contacts.json', 'w') as f:
@@ -68,20 +71,18 @@ def main():
         new_contact['email_hash'] = SHA256.new(new_contact['email_address'].encode()).hexdigest()
        
         contacts = decrypt_contacts()
-        print('type of contacts: ', type(contacts))
+        if contacts:
+            for contact in contacts:
+                if contact['email_address'] == new_contact['email_address']:
+                    contact.update(new_contact)
+                    decrypt_and_update(contacts)
+                    break
 
-        for contact in contacts:
-            if contact['email_address'] == new_contact['email_address']:
-                contact.update(new_contact)
+            else:
+                contacts.append(new_contact)
                 decrypt_and_update(contacts)
-                break
-
-        else:
-            contacts.append(new_contact)
-            decrypt_and_update(contacts)
-
-        print("Contact Added.")
-
+        print('Contact added.')
+    
     except KeyboardInterrupt:
         sys.exit()
 
